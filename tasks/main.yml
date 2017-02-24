@@ -1,0 +1,70 @@
+---
+- name: Flag the system for reconfiguration
+  file:
+    path: './unconfigured'
+    state: touch
+
+- name: remove ssh host keys
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_fileglob:
+    - /etc/ssh/ssh_host_*
+
+- name: reset hostname in RHEL 6
+  lineinfile:
+    dest: /etc/sysconfig/network
+    regexp: '^HOSTNAME='
+    line: 'HOSTNAME=localhost.localdomain'
+  when: ansible_os_family == "RedHat" and ansible_lsb.major_release|int == 6
+  tags:
+    - reset_hostname
+
+- name: reset hostname in RHEL 7
+  lineinfile:
+    dest: /etc/hostname
+    regexp: '^HOSTNAME='
+    line: 'HOSTNAME=localhost.localdomain'
+  when: ansible_os_family == "RedHat" and ansible_lsb.major_release|int == 7
+  tags:
+    - reset_hostname
+
+- name: remove UDEV rules
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_fileglob:
+    - /etc/udev/rules.d/70-*
+
+- name: remove HWADDR from ifcfg-eth*
+  lineinfile:
+    path: "{{ item }}"
+    state: absent
+    regexp: "^HWADDR=.*"
+  with_fileglob:
+    - /etc/sysconfig/network-scripts/ifcfg-eth*
+
+- name: remove UUID from ifcfg-eth*
+  lineinfile:
+    path: "{{ item }}"
+    state: absent
+    regexp: "^UUID=.*"
+  with_fileglob:
+    - /etc/sysconfig/network-scripts/ifcfg-eth*
+
+- name: remove log files and dir from /var/log
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_fileglob:
+    - /var/log/*
+  tags:
+    - delete_logs
+
+- name: Poweroff host
+  shell: "shutdown -t sec 5"
+  async: 1
+  poll: 0
+  ignore_errors: yes
+  tags:
+    - poweroff
