@@ -1,7 +1,10 @@
+[![Build Status](https://travis-ci.org/rhevm-qe-automation/ansible-role-seal.svg?branch=master)](https://travis-ci.org/rhevm-qe-automation/ansible-role-seal)
+
 Seal
 ====
 
-Performs sealing of Red Hat Enterprise Linux 7 machine
+Performs sealing of Red Hat Enterprise Linux machine described at
+[oVirt site](http://www.ovirt.org/documentation/how-to/virtual-machines/sealing-linux-vm/).
 
 Requirements
 ------------
@@ -18,20 +21,33 @@ Dependencies
 
 None
 
+Available tags
+--------------
+
+You can skip following sealing steps using `--skip-tags` option.
+
+* **reset\_hostname**
+
+  Tag is assigned to tasks which reset hostname.
+
+* **delete\_logs**
+
+  Tag is assigned to tasks which wipe out `/var/log/` directory.
+
+* **poweroff**
+
+  Tag is assigned to task which shutdown sealed machine.
+
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: target
-      roles:
-         - { role: rhevm-qe-automation.ansible-role-seal }
-
-Available are the following tags to be used with --skip-tags option:
-- reset_hostname: Optionally, for environments where a host cannot determine its own name via DNS based lookups
-    set HOSTNAME=localhost.localdomain
-- delete_logs: [Optionally] Delete the build logs from /var/log.
-- poweroff: shutdown the sealed machine
+```yaml
+---
+- hosts: all
+  remote_user: root
+  roles:
+    - { role: rhevm-qe-automation.ansible-role-seal }
+```
 
 Author Information
 ------------------
