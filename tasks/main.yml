@@ -1,4 +1,11 @@
 ---
+- name: Load a variable file based on the OS type.
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_os_family }}{{ ansible_distribution_major_version }}.yml"
+    - "{{ ansible_os_family }}.yml"
+    - "defaults.yml"
+
 - name: Flag the system for reconfiguration
   file:
     path: './unconfigured'
@@ -11,21 +18,26 @@
   with_fileglob:
     - /etc/ssh/ssh_host_*
 
-- name: reset hostname in RHEL 6
+- name: reset hostname on RHEL/CentOS <= 6
   lineinfile:
-    dest: /etc/sysconfig/network
+    dest: "{{ seal_hostname_file_path }}"
     regexp: '^HOSTNAME='
     line: 'HOSTNAME=localhost.localdomain'
-  when: ansible_os_family == "RedHat" and ansible_lsb.major_release|int == 6
+    unsafe_writes: "{{ seal_run_containerized }}"
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution_major_version|int <= 6
   tags:
     - reset_hostname
 
-- name: reset hostname in RHEL 7
-  lineinfile:
-    dest: /etc/hostname
-    regexp: '^HOSTNAME='
-    line: 'HOSTNAME=localhost.localdomain'
-  when: ansible_os_family == "RedHat" and ansible_lsb.major_release|int == 7
+- name: reset hostname
+  copy:
+    dest: "{{ seal_hostname_file_path }}"
+    content: 'localhost.localdomain'
+    unsafe_writes: "{{ seal_run_containerized }}"
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution_major_version|int > 6
   tags:
     - reset_hostname
 
@@ -36,21 +48,21 @@
   with_fileglob:
     - /etc/udev/rules.d/70-*
 
-- name: remove HWADDR from ifcfg-eth*
+- name: remove HWADDR from ifcfg-*
   lineinfile:
-    path: "{{ item }}"
+    dest: "{{ item }}"  # 'path' is new in 2.3
     state: absent
     regexp: "^HWADDR=.*"
   with_fileglob:
-    - /etc/sysconfig/network-scripts/ifcfg-eth*
+    - /etc/sysconfig/network-scripts/ifcfg-*
 
-- name: remove UUID from ifcfg-eth*
+- name: remove UUID from ifcfg-*
   lineinfile:
-    path: "{{ item }}"
+    dest: "{{ item }}"  # 'path' is new in 2.3
     state: absent
     regexp: "^UUID=.*"
   with_fileglob:
-    - /etc/sysconfig/network-scripts/ifcfg-eth*
+    - /etc/sysconfig/network-scripts/ifcfg-*
 
 - name: remove log files and dir from /var/log
   file:

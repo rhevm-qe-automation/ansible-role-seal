@@ -14,7 +14,12 @@ None
 Role Variables
 --------------
 
-None
+* **seal\_run\_containerized**
+
+  This option allows `seal` role run inside of container, default=false.
+
+  Problem is with `/etc/hostname` file which can not be renamed because it
+  is being bind-mounted.
 
 Dependencies
 ------------
