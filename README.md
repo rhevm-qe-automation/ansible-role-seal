@@ -3,8 +3,10 @@
 Seal
 ====
 
-Performs sealing of Red Hat Enterprise Linux machine described at
-[oVirt site](http://www.ovirt.org/documentation/how-to/virtual-machines/sealing-linux-vm/).
+This role performs sealing steps for following operating systems:
+
+* RedHat / CentOS  ([oVirt site](http://www.ovirt.org/documentation/how-to/virtual-machines/sealing-linux-vm/).)
+* Ubuntu / Debian
 
 Requirements
 ------------
