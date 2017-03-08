@@ -5,7 +5,7 @@ Seal
 
 This role performs sealing steps for following operating systems:
 
-* RedHat / CentOS  ([oVirt site](http://www.ovirt.org/documentation/how-to/virtual-machines/sealing-linux-vm/).)
+* RedHat / CentOS  ([oVirt site](http://www.ovirt.org/documentation/how-to/virtual-machines/sealing-linux-vm/))
 * Ubuntu / Debian
 
 Requirements
