@@ -35,9 +35,9 @@
     dest: "{{ seal_hostname_file_path }}"
     content: 'localhost.localdomain'
     unsafe_writes: "{{ seal_run_containerized }}"
-  when:
-    - ansible_os_family == "RedHat"
-    - ansible_distribution_major_version|int > 6
+  when: (ansible_os_family == "RedHat" and
+         ansible_distribution_major_version|int > 6) or
+         ansible_os_family == "Debian"
   tags:
     - reset_hostname
 
@@ -48,21 +48,30 @@
   with_fileglob:
     - /etc/udev/rules.d/70-*
 
-- name: remove HWADDR from ifcfg-*
+- name: remove HWADDR from ifcfg-* on RHEL/Centos
   lineinfile:
     dest: "{{ item }}"  # 'path' is new in 2.3
     state: absent
     regexp: "^HWADDR=.*"
   with_fileglob:
     - /etc/sysconfig/network-scripts/ifcfg-*
+  when: ansible_os_family == "RedHat"
 
-- name: remove UUID from ifcfg-*
+- name: remove UUID from ifcfg-* on RHEL/Centos
   lineinfile:
     dest: "{{ item }}"  # 'path' is new in 2.3
     state: absent
     regexp: "^UUID=.*"
   with_fileglob:
     - /etc/sysconfig/network-scripts/ifcfg-*
+  when: ansible_os_family == "RedHat"
+
+- name: remove hwaddr information from network interfaces on Ubuntu/Debian
+  lineinfile:
+    dest: "/etc/network/interfaces"  # 'path' is new in 2.3
+    state: absent
+    regexp: "^[ \t]*hwaddress.*"
+  when: ansible_os_family == 'Debian'
 
 - name: remove log files and dir from /var/log
   file:

@@ -12,11 +12,12 @@
         image: "registry.access.redhat.com/rhel6:latest"
       - name: seal_rhel7
         image: "registry.access.redhat.com/rhel:latest"
-# Role doesn't support ubuntu
-#      - name: seal_ubuntu12
-#        image: "chrismeyers/ubuntu12.04"
-#      - name: seal_ubuntu14
-#        image: "ubuntu-upstart:14.04"
+      - name: seal_ubuntu12
+        image: "chrismeyers/ubuntu12.04"
+      - name: seal_ubuntu14
+        image: "nimmis/ubuntu:14.04"
+      - name: seal_ubuntu16
+        image: "nimmis/ubuntu:16.04"
   roles:
     - role: provision_docker
       provision_docker_inventory: "{{ inventory }}"
