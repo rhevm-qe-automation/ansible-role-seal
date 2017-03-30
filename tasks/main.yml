@@ -82,6 +82,9 @@
   tags:
     - delete_logs
 
+- name: remove content from /etc/machine-id file
+  shell: "> /etc/machine-id"
+
 - name: Poweroff host
   shell: "shutdown -t sec 5"
   async: 1
