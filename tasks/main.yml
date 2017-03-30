@@ -11,12 +11,18 @@
     path: './unconfigured'
     state: touch
 
+- name: Fetch logs to be removed
+  find:
+    paths: "/etc/ssh"
+    patterns: "ssh_host_*"
+    file_type: "file"
+  register: ssh_key_files
+
 - name: remove ssh host keys
   file:
-    path: "{{ item }}"
+    path: "{{ item.path }}"
     state: absent
-  with_fileglob:
-    - /etc/ssh/ssh_host_*
+  with_items: "{{ ssh_key_files.files }}"
 
 - name: reset hostname on RHEL/CentOS <= 6
   lineinfile:
@@ -41,29 +47,41 @@
   tags:
     - reset_hostname
 
-- name: remove UDEV rules
-  file:
-    path: "{{ item }}"
-    state: absent
-  with_fileglob:
-    - /etc/udev/rules.d/70-*
+- block:
+    - name: Fetch udev rules to be removed
+      find:
+        paths: "/etc/udev/rules.d"
+        patterns: "70-*.rules"
+        file_type: "file"
+      register: udev_rules_files
 
-- name: remove HWADDR from ifcfg-* on RHEL/Centos
-  lineinfile:
-    dest: "{{ item }}"  # 'path' is new in 2.3
-    state: absent
-    regexp: "^HWADDR=.*"
-  with_fileglob:
-    - /etc/sysconfig/network-scripts/ifcfg-*
-  when: ansible_os_family == "RedHat"
+    - name: remove UDEV rules
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      with_items: "{{ udev_rules_files.files }}"
 
-- name: remove UUID from ifcfg-* on RHEL/Centos
-  lineinfile:
-    dest: "{{ item }}"  # 'path' is new in 2.3
-    state: absent
-    regexp: "^UUID=.*"
-  with_fileglob:
-    - /etc/sysconfig/network-scripts/ifcfg-*
+    - name: Fetch ifcfg files to be modified
+      find:
+        paths: "/etc/sysconfig/network-scripts"
+        patterns: "ifcfg-*"
+        file_type: "file"
+      register: ifcfg_files
+
+    - name: remove HWADDR from ifcfg-* on RHEL/Centos
+      lineinfile:
+        dest: "{{ item.path }}"  # 'path' is new in 2.3
+        state: absent
+        regexp: "^HWADDR=.*"
+      with_items: "{{ ifcfg_files.files }}"
+
+    - name: remove UUID from ifcfg-* on RHEL/Centos
+      lineinfile:
+        dest: "{{ item.path }}"  # 'path' is new in 2.3
+        state: absent
+        regexp: "^UUID=.*"
+      with_items: "{{ ifcfg_files.files }}"
+
   when: ansible_os_family == "RedHat"
 
 - name: remove hwaddr information from network interfaces on Ubuntu/Debian
@@ -73,12 +91,20 @@
     regexp: "^[ \t]*hwaddress.*"
   when: ansible_os_family == 'Debian'
 
+
+- name: Fetch logs to be removed
+  find:
+    paths: "/var/log"
+    patterns: "*"
+    file_type: "file"
+    recurse: yes
+  register: log_files
+
 - name: remove log files and dir from /var/log
   file:
-    path: "{{ item }}"
+    path: "{{ item.path }}"
     state: absent
-  with_fileglob:
-    - /var/log/*
+  with_items: "{{ log_files.files }}"
   tags:
     - delete_logs
 
