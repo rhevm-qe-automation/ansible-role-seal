@@ -82,6 +82,11 @@
         regexp: "^UUID=.*"
       with_items: "{{ ifcfg_files.files }}"
 
+    - name: remove systemid for systems registered to RHN
+      file:
+        path: "/etc/sysconfig/rhn/systemid"
+        state: absent
+
   when: ansible_os_family == "RedHat"
 
 - name: remove hwaddr information from network interfaces on Ubuntu/Debian
