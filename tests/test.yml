@@ -21,6 +21,7 @@
   roles:
     - role: provision_docker
       provision_docker_inventory: "{{ inventory }}"
+      provision_docker_network: "host"
 
 
 - name: Run seal tests on containerized environments
