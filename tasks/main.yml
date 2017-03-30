@@ -11,7 +11,7 @@
     path: './unconfigured'
     state: touch
 
-- name: Fetch logs to be removed
+- name: Fetch SSH keys to be removed
   find:
     paths: "/etc/ssh"
     patterns: "ssh_host_*"
