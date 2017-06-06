@@ -104,6 +104,8 @@
     file_type: "file"
     recurse: yes
   register: log_files
+  tags:
+    - delete_logs
 
 - name: remove log files and dir from /var/log
   file:
@@ -117,9 +119,7 @@
   shell: "> /etc/machine-id"
 
 - name: Poweroff host
-  shell: "shutdown -t sec 5"
-  async: 1
-  poll: 0
+  shell: "shutdown"  # scheduling shutdown in 1m
   ignore_errors: yes
   tags:
     - poweroff
