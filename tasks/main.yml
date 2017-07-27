@@ -87,6 +87,11 @@
         path: "/etc/sysconfig/rhn/systemid"
         state: absent
 
+    - name: remove yum cache on RHEL/Centos
+      shell: "yum clean all; rm -rf /var/cache/yum"
+      args:
+        warn: no
+
   when: ansible_os_family == "RedHat"
 
 - name: remove hwaddr information from network interfaces on Ubuntu/Debian
@@ -96,6 +101,11 @@
     regexp: "^[ \t]*hwaddress.*"
   when: ansible_os_family == 'Debian'
 
+- name: remove apt cache on Ubuntu/Debian
+  shell: "apt-get clean"
+  args:
+    warn: no
+  when: ansible_os_family == 'Debian'
 
 - name: Fetch logs to be removed
   find:
