@@ -20,4 +20,5 @@ galaxy_info:
   - sealing
   - rhel
   - template
+  - virtual-machine
 dependencies: []
