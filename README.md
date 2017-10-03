@@ -11,7 +11,9 @@ This role performs sealing steps for following operating systems:
 Requirements
 ------------
 
-None
+You need to have enabled [ControlMaster](http://docs.ansible.com/ansible/latest/intro_configuration.html#openssh-specific-settings)
+under [ssh_connection] header in ansible configuration file.  
+The defaults `ssh_args = -o ControlMaster=auto -o ControlPersist=60s` will work.
 
 Role Variables
 --------------
