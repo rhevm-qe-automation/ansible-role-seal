@@ -8,7 +8,7 @@
 
 - name: Flag the system for reconfiguration
   file:
-    path: './unconfigured'
+    path: '/.unconfigured'
     state: touch
 
 - name: Fetch SSH keys to be removed
