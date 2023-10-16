@@ -1,8 +1,7 @@
 ---
 - name: Converge
   hosts: molecule
-#  gather_facts: false
   vars:
-    seal_run_containerized: yes
+    seal_run_containerized: true
   roles:
-    - role: rhevm-qe-automation.ansible-role-seal
+    - role: ansible_role_seal

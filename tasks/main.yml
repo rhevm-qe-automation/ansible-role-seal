@@ -1,33 +1,34 @@
 ---
 - name: Load a variable file based on the OS type.
-  include_vars: "{{ item }}"
+  ansible.builtin.include_vars: "{{ item }}"
   with_first_found:
     - "{{ ansible_os_family }}{{ ansible_distribution_major_version }}.yml"
     - "{{ ansible_os_family }}.yml"
     - "defaults.yml"
 
 - name: Flag the system for reconfiguration
-  file:
+  ansible.builtin.file:
     path: '/.unconfigured'
     state: touch
   tags:
     - molecule-idempotence-notest
+    - skip_ansible_lint
 
 - name: Fetch SSH keys to be removed
-  find:
+  ansible.builtin.find:
     paths: "/etc/ssh"
     patterns: "ssh_host_*"
     file_type: "file"
   register: ssh_key_files
 
-- name: remove ssh host keys
-  file:
+- name: Remove ssh host keys
+  ansible.builtin.file:
     path: "{{ item.path }}"
     state: absent
   with_items: "{{ ssh_key_files.files }}"
 
-- name: reset hostname on RHEL/CentOS <= 6
-  lineinfile:
+- name: Reset hostname on RHEL/CentOS <= 6
+  ansible.builtin.lineinfile:
     dest: "{{ seal_hostname_file_path }}"
     regexp: '^HOSTNAME='
     line: 'HOSTNAME=localhost.localdomain'
@@ -38,8 +39,8 @@
   tags:
     - reset_hostname
 
-- name: reset hostname
-  copy:
+- name: Reset hostname
+  ansible.builtin.copy:
     dest: "{{ seal_hostname_file_path }}"
     content: 'localhost.localdomain'
     unsafe_writes: "{{ seal_run_containerized }}"
@@ -48,77 +49,81 @@
          ansible_os_family == "Debian"
   tags:
     - reset_hostname
+    - skip_ansible_lint
 
-- block:
+- name: RedHat OS cleanup
+  when: ansible_os_family == "RedHat"
+  block:
     - name: Fetch udev rules to be removed
-      find:
+      ansible.builtin.find:
         paths: "/etc/udev/rules.d"
         patterns: "70-*.rules"
         file_type: "file"
       register: udev_rules_files
 
-    - name: remove UDEV rules
-      file:
+    - name: Remove UDEV rules
+      ansible.builtin.file:
         path: "{{ item.path }}"
         state: absent
       with_items: "{{ udev_rules_files.files }}"
 
     - name: Fetch ifcfg files to be modified
-      find:
+      ansible.builtin.find:
         paths: "/etc/sysconfig/network-scripts"
         patterns: "ifcfg-*"
         file_type: "file"
       register: ifcfg_files
 
-    - name: remove HWADDR from ifcfg-* on RHEL/Centos
-      lineinfile:
+    - name: Remove HWADDR from ifcfg-* on RHEL/Centos
+      ansible.builtin.lineinfile:
         dest: "{{ item.path }}"  # 'path' is new in 2.3
         state: absent
         regexp: "^HWADDR=.*"
       with_items: "{{ ifcfg_files.files }}"
 
-    - name: remove UUID from ifcfg-* on RHEL/Centos
-      lineinfile:
+    - name: Remove UUID from ifcfg-* on RHEL/Centos
+      ansible.builtin.lineinfile:
         dest: "{{ item.path }}"  # 'path' is new in 2.3
         state: absent
         regexp: "^UUID=.*"
       with_items: "{{ ifcfg_files.files }}"
 
-    - name: remove systemid for systems registered to RHN
-      file:
+    - name: Remove systemid for systems registered to RHN
+      ansible.builtin.file:
         path: "/etc/sysconfig/rhn/systemid"
         state: absent
 
-    - name: remove yum cache on RHEL/Centos
+    - name: Remove yum cache on RHEL/Centos
       ansible.builtin.shell: "yum clean all; rm -rf /var/cache/yum"
       tags:
         - molecule-idempotence-notest
+        - skip_ansible_lint
 
-  when: ansible_os_family == "RedHat"
-
-- name: remove hwaddr information from network interfaces on Ubuntu/Debian
-  lineinfile:
+- name: Remove hwaddr information from network interfaces on Ubuntu/Debian
+  ansible.builtin.lineinfile:
     dest: "/etc/network/interfaces"  # 'path' is new in 2.3
     state: absent
     regexp: "^[ \t]*hwaddress.*"
   when: ansible_os_family == 'Debian'
 
-- name: remove apt cache on Ubuntu/Debian
+- name: Remove apt cache on Ubuntu/Debian
   ansible.builtin.shell: "apt-get clean"
+  tags:
+    - skip_ansible_lint
   when: ansible_os_family == 'Debian'
 
 - name: Fetch logs to be removed
-  find:
+  ansible.builtin.find:
     paths: "/var/log"
     patterns: "*"
     file_type: "file"
-    recurse: yes
+    recurse: true
   register: log_files
   tags:
     - delete_logs
 
-- name: remove log files and dir from /var/log
-  file:
+- name: Remove log files and dir from /var/log
+  ansible.builtin.file:
     path: "{{ item.path }}"
     state: absent
   with_items: "{{ log_files.files }}"
@@ -126,15 +131,16 @@
     - delete_logs
     - molecule-idempotence-notest
 
-- name: remove content from /etc/machine-id file
+- name: Remove content from /etc/machine-id file
   ansible.builtin.shell: "> /etc/machine-id"
   tags:
     - molecule-idempotence-notest
+    - skip_ansible_lint
 
 - name: Poweroff host
   ansible.builtin.shell: "shutdown"  # scheduling shutdown in 1m
-  ignore_errors: yes
+  ignore_errors: true  # ignore-errors
   tags:
     - poweroff
-  tags:
     - molecule-idempotence-notest
+    - skip_ansible_lint

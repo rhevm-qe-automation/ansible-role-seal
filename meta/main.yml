@@ -1,26 +1,26 @@
 galaxy_info:
-  role_name: ansible-role-seal
-  namespace: rhevm-qe-automation
-  author: Katerina Koukiou
-  description: Role to seal Linux machine
+  role_name: ansible_role_seal
+#  namespace: rhevm_qe_automation
+  author: "Katerina Koukiou"
+  description: "Role to seal Linux machine"
   company: RedHat
   license: GPLv3
-  min_ansible_version: 2.2
+  min_ansible_version: "2.2"
   platforms:
-  - name: EL
-    versions:
-    - 6
-    - 7
-  - name: Ubuntu
-    versions:
-    - all
-  - name: Debian
-    versions:
-    - all
+    - name: EL
+      versions:
+        - "6"
+        - "7"
+    - name: Ubuntu
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
   galaxy_tags:
-  - seal
-  - sealing
-  - rhel
-  - template
-  - virtual-machine
+    - seal
+    - sealing
+    - rhel
+    - template
+    - virtualmachine
 dependencies: []
