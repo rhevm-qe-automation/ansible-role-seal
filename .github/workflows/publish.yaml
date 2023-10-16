@@ -1,0 +1,27 @@
+name: Publish to Ansible Galaxy
+
+on:
+  release:
+    types:
+      - created
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install dependencies
+        run: pip install ansible
+
+      - name: Publish to Ansible Galaxy
+        run: |
+          ansible-galaxy role import rhevm-qe-automation ansible-role-seal --token ${{ secrets.ANSIBLE_GALAXY_TOKEN }}
+        env:
+          ANSIBLE_GALAXY_TOKEN: ${{ secrets.ANSIBLE_GALAXY_TOKEN }}

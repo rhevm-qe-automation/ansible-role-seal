@@ -1,0 +1,13 @@
+---
+role_name_check: 1
+dependency:
+  name: galaxy
+  options:
+    requirements-file: tests/requirements.yml
+lint: |
+  set -e
+  yamllint .
+  ansible-lint
+platforms:
+  - name: centos8
+    image: quay.io/centos/centos:stream8
