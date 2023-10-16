@@ -1,4 +1,6 @@
 galaxy_info:
+  role_name: ansible-role-seal
+  namespace: rhevm-qe-automation
   author: Katerina Koukiou
   description: Role to seal Linux machine
   company: RedHat

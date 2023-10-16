@@ -10,6 +10,8 @@
   file:
     path: '/.unconfigured'
     state: touch
+  tags:
+    - molecule-idempotence-notest
 
 - name: Fetch SSH keys to be removed
   find:
@@ -88,9 +90,9 @@
         state: absent
 
     - name: remove yum cache on RHEL/Centos
-      shell: "yum clean all; rm -rf /var/cache/yum"
-      args:
-        warn: no
+      ansible.builtin.shell: "yum clean all; rm -rf /var/cache/yum"
+      tags:
+        - molecule-idempotence-notest
 
   when: ansible_os_family == "RedHat"
 
@@ -102,9 +104,7 @@
   when: ansible_os_family == 'Debian'
 
 - name: remove apt cache on Ubuntu/Debian
-  shell: "apt-get clean"
-  args:
-    warn: no
+  ansible.builtin.shell: "apt-get clean"
   when: ansible_os_family == 'Debian'
 
 - name: Fetch logs to be removed
@@ -124,12 +124,17 @@
   with_items: "{{ log_files.files }}"
   tags:
     - delete_logs
+    - molecule-idempotence-notest
 
 - name: remove content from /etc/machine-id file
-  shell: "> /etc/machine-id"
+  ansible.builtin.shell: "> /etc/machine-id"
+  tags:
+    - molecule-idempotence-notest
 
 - name: Poweroff host
-  shell: "shutdown"  # scheduling shutdown in 1m
+  ansible.builtin.shell: "shutdown"  # scheduling shutdown in 1m
   ignore_errors: yes
   tags:
     - poweroff
+  tags:
+    - molecule-idempotence-notest
